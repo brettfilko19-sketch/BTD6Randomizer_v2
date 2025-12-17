@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BTD6 CHIMPS Strategy Planner</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #16213e; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460; }
+        h2 { color: #4ecca3; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #95a5a6; font-size: 0.9em; margin-bottom: 25px; }
+        .input-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+        label { margin-bottom: 8px; font-weight: bold; color: #95a5a6; }
+        select { padding: 12px; border-radius: 6px; background: #0f3460; color: white; border: 1px solid #1a1a2e; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        
+        .btn-random { 
+            width: 100%; padding: 15px; margin-bottom: 20px; border: none; border-radius: 8px; 
+            background: #4ecca3; color: #1a1a2e; font-weight: bold; font-size: 1.1em; 
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 0 #3ba382;
+        }
+        .btn-random:hover { background: #45b691; transform: translateY(-2px); }
+        .btn-random:active { transform: translateY(2px); box-shadow: none; }
+
+        .summary { margin-top: 30px; padding: 20px; background: #0f3460; border-radius: 8px; border-left: 5px solid #4ecca3; }
+        .total-box { font-size: 1.5em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 6px; font-weight: bold; }
+        .under-budget { border: 2px solid #4ecca3; color: #4ecca3; background: rgba(78, 204, 163, 0.1); }
+        .over-budget { border: 2px solid #e94560; color: #e94560; background: rgba(233, 69, 96, 0.1); animation: blink 1.5s infinite; }
+        
+        @keyframes blink { 50% { opacity: 0.7; } }
+        .warning-text { color: #e94560; font-weight: bold; text-align: center; margin-top: 10px; font-size: 1.1em; }
+        #priceReport p { margin: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        .cost-val { float: right; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CHIMPS Strategy Planner</h2>
+    <div class="subtitle">Cumulative Cost Calculator (Hard Mode Prices)</div>
+    
+    <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
+
+    <div class="input-group">
+        <label>Hero:</label>
+        <select id="heroSelect" onchange="updateUI()"></select>
+    </div>
+
+    <div class="input-group">
+        <label>Tower 1 (Cumulative Cost):</label>
+        <select id="tower1" onchange="updateUI()"></select>
+    </div>
+
+    <div class="input-group">
+        <label>Tower 2 (Cumulative Cost):</label>
+        <select id="tower2" onchange="updateUI()"></select>
+    </div>
+
+    <div class="summary">
+        <div id="priceReport"></div>
+        <div id="totalDisplay" class="total-box">Total: $0</div>
+        <div id="budgetWarning" class="warning-text"></div>
+    </div>
+</div>
+
+<script>
+/** * PRICES SHOWN ARE CUMULATIVE (Base + T1 + T2 + T3 + T4 + T5) 
+ * Hard Mode / CHIMPS Difficulty
+ */
+const heroes = [
+    { name: "Quincy", price: 585 },
+    { name: "Gwendolin", price: 970 },
+    { name: "Obyn Greenfoot", price: 700 },
+    { name: "Captain Churchill", price: 2160 },
+    { name: "Adora", price: 1080 },
+    { name: "Corvus", price: 1325 },
+    { name: "Silas (The Ice Shaper)", price: 1200 },
+    { name: "Sauda", price: 650 }
+];
+
+const towers = [
+    { name: "Desperado: Blazing Sun", price: 21400 }, 
+    { name: "Desperado: Golden Justice", price: 44200 }, 
+    { name: "Desperado: Desert Phantom", price: 51000 },
+    { name: "Mermonkey: Lord of the Abyss", price: 34500 }, 
+    { name: "Mermonkey: Popseidon", price: 48000 },
+    { name: "Mermonkey: Final Harmonic", price: 41200 },
+    { name: "Dart: Crossbow Master", price: 27375 },
+    { name: "Boomer: Glaive Lord", price: 42100 },
+    { name: "Tack: The Tack Zone", price: 25850 },
+    { name: "Wizard: Archmage", price: 42500 },
+    { name: "Spike: Perma-Spike", price: 39500 },
+    { name: "Ice: Icicle Impale", price: 38200 },
+    { name: "Ninja: Grandmaster Ninja", price: 52000 },
+    { name: "Sniper: Elite Sniper", price: 21500 },
+    { name: "Heli: Apache Prime", price: 58000 },
+    { name: "Sub: Sub Commander", price: 34000 }
+];
+
+function initDropdowns() {
+    const heroEl = document.getElementById('heroSelect');
+    const t1El = document.getElementById('tower1');
+    const t2El = document.getElementById('tower2');
+
+    heroes.forEach((h, i) => heroEl.add(new Option(`${h.name} ($${h.price})`, i)));
+    towers.forEach((t, i) => {
+        t1El.add(new Option(`${t.name} ($${t.price})`, i));
+        t2El.add(new Option(`${t.name} ($${t.price})`, i));
+    });
+}
+
+function rollRandom() {
+    document.getElementById('heroSelect').selectedIndex = Math.floor(Math.random() * heroes.length);
+    document.getElementById('tower1').selectedIndex = Math.floor(Math.random() * towers.length);
+    document.getElementById('tower2').selectedIndex = Math.floor(Math.random() * towers.length);
+    updateUI();
+}
+
+function updateUI() {
+    const hIdx = document.getElementById('heroSelect').value;
+    const t1Idx = document.getElementById('tower1').value;
+    const t2Idx = document.getElementById('tower2').value;
+
+    const h = heroes[hIdx];
+    const t1 = towers[t1Idx];
+    const t2 = towers[t2Idx];
+
+    const total = h.price + t1.price + t2.price;
+    const budgetLimit = 100000;
+
+    document.getElementById('priceReport').innerHTML = `
+        <p><strong>Hero Base:</strong> <span class="cost-val">$${h.price.toLocaleString()}</span></p>
+        <p><strong>T1 Cumulative:</strong> <span class="cost-val">$${t1.price.toLocaleString()}</span></p>
+        <p><strong>T2 Cumulative:</strong> <span class="cost-val">$${t2.price.toLocaleString()}</span></p>
+    `;
+
+    const totalBox = document.getElementById('totalDisplay');
+    totalBox.innerText = `Total Investment: $${total.toLocaleString()}`;
+
+    const warning = document.getElementById('budgetWarning');
+    if (total > budgetLimit) {
+        totalBox.className = "total-box over-budget";
+        warning.innerText = "⚠️ EXCEEDS $100K: This setup takes up most of your CHIMPS cash!";
+    } else {
+        totalBox.className = "total-box under-budget";
+        warning.innerText = "✅ Good Budget: Plenty left for Village/Alch support.";
+    }
+}
+
+initDropdowns();
+updateUI();
+</script>
+
+</body>
+</html>
