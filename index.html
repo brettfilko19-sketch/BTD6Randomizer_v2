@@ -27,7 +27,7 @@
 
 <div class="container">
     <h2>CHIMPS Strategy Planner</h2>
-    <div class="subtitle">Tier 5 Database - Logic Fixed for Magic Towers</div>
+    <div class="subtitle">BTD6 Tier 5 Database - Stability Patch applied</div>
     
     <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
 
@@ -54,100 +54,91 @@
 </div>
 
 <script>
-const heroes = [
-    { name: "Quincy", price: 585 }, { name: "Gwen", price: 970 }, { name: "Obyn", price: 700 },
-    { name: "Churchill", price: 2160 }, 
-    { name: "Ezili", price: 650 }, { name: "Pat Fusty", price: 865 }, { name: "Adora", price: 1080 },
-    { name: "Admiral Brickell", price: 970 }, { name: "Etienne", price: 920 }, { name: "Sauda", price: 650 },
-    { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, { name: "Corvus", price: 1325 },
-    { name: "Silas", price: 1200 }, { name: "Rosalia", price: 1100 }
-];
-
-const primaryT5 = [
-    { name: "Dart: Ultra-Jugg", price: 18740 }, { name: "Dart: PMFC", price: 53700 }, { name: "Dart: XBM", price: 27375 },
-    { name: "Boomer: Glaive Lord", price: 42100 }, { name: "Boomer: Perma Charge", price: 41250 }, { name: "Boomer: MOAB Dom", price: 63500 },
-    { name: "Bomb: Bloon Crush", price: 61000 }, { name: "Bomb: MOAB Elim", price: 31500 }, { name: "Bomb: Bomb Blitz", price: 40500 },
-    { name: "Tack: Inferno Ring", price: 55500 }, { name: "Tack: S-Maelstrom", price: 18500 }, { name: "Tack: Tack Zone", price: 25850 },
-    { name: "Ice: Super Brittle", price: 38500 }, { name: "Ice: Absolute Zero", price: 26000 }, { name: "Ice: Icicle Impale", price: 38200 },
-    { name: "Glue: Bloon Solver", price: 31000 }, { name: "Glue: Glue Storm", price: 19500 }, { name: "Glue: Super Glue", price: 35000 }
-];
-
-const militaryT5 = [
-    { name: "Sniper: Cripple MOAB", price: 45000 }, { name: "Sniper: Elite Sniper", price: 21500 }, { name: "Sniper: Elite Defender", price: 17500 },
-    { name: "Sub: Energizer", price: 37000 }, { name: "Sub: Pre-Emptive", price: 43000 }, { name: "Sub: Sub Commander", price: 34000 },
-    { name: "Ace: Sky Shredder", price: 46100 }, { name: "Ace: Tsar Bomba", price: 38000 }, { name: "Ace: Big Plane", price: 102000 },
-    { name: "Heli: Apache Prime", price: 58000 }, { name: "Heli: Com. Commander", price: 38000 }, { name: "Heli: Special Poperations", price: 32000 },
-    { name: "Dartling: Ray of Doom", price: 112000 }, { name: "Dartling: M.A.D", price: 72000 }, { name: "Dartling: B.E.Z", price: 62000 }
-];
-
-const magicT5 = [
-    { name: "Wizard: Archmage", price: 42500 }, { name: "Wizard: WLP", price: 65000 }, { name: "Wizard: Prince Darkness", price: 31800 },
-    { name: "Super: True Sun God", price: 650000 }, { name: "Super: Anti-Bloon", price: 103000 }, { name: "Super: Legend of Night", price: 255000 },
-    { name: "Ninja: Grandmaster", price: 52000 }, { name: "Ninja: Grand Saboteur", price: 25000 }, { name: "Ninja: Master Bomber", price: 44000 },
-    { name: "Alch: Permabrew", price: 72000 }, { name: "Alch: Total Transfo", price: 51000 }, { name: "Alch: BMA", price: 54000 },
-    { name: "Druid: Superstorm", price: 75000 }, { name: "Druid: Spirit Forest", price: 48000 }, { name: "Druid: Avatar Wrath", price: 52000 },
-    { name: "Mermonkey: Abyss Lord", price: 34500 }, { name: "Mermonkey: Popseidon", price: 48000 }, { name: "Mermonkey: Final Harmonic", price: 41200 }
-];
-
-const supportT5 = [
-    { name: "Spike: Super Mines", price: 162500 }, { name: "Spike: Carpet Spikes", price: 45000 }, { name: "Spike: Perma-Spike", price: 39500 },
-    { name: "Village: Primary Expert", price: 32000 }, { name: "Village: Homeland", price: 55000 }, { name: "Village: Monkeyopolis", price: 15000 },
-    { name: "Engi: Sent. Champion", price: 36000 }, { name: "Engi: Ultraboost", price: 115000 }, { name: "Engi: XXXL Trap", price: 62000 },
-    { name: "Beast: Megalodon", price: 65000 }, { name: "Beast: Pouākai", price: 48000 }, { name: "Beast: Giganotosaurus", price: 82000 }
-];
+// Data organized into a single object for easier lookup
+const DATA = {
+    heroes: [
+        { name: "Quincy", price: 585 }, { name: "Gwen", price: 970 }, { name: "Obyn", price: 700 },
+        { name: "Churchill", price: 2160 }, { name: "Ezili", price: 650 }, { name: "Pat Fusty", price: 865 }, 
+        { name: "Adora", price: 1080 }, { name: "Admiral Brickell", price: 970 }, { name: "Etienne", price: 920 }, 
+        { name: "Sauda", price: 650 }, { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, 
+        { name: "Corvus", price: 1325 }, { name: "Silas", price: 1200 }, { name: "Rosalia", price: 1100 }
+    ],
+    P: [ // Primary
+        { name: "Dart: Ultra-Jugg", price: 18740 }, { name: "Dart: PMFC", price: 53700 }, { name: "Dart: XBM", price: 27375 },
+        { name: "Boomer: Glaive Lord", price: 42100 }, { name: "Boomer: Perma Charge", price: 41250 }, { name: "Boomer: MOAB Dom", price: 63500 },
+        { name: "Bomb: Bloon Crush", price: 61000 }, { name: "Bomb: MOAB Elim", price: 31500 }, { name: "Bomb: Bomb Blitz", price: 40500 },
+        { name: "Tack: Inferno Ring", price: 55500 }, { name: "Tack: S-Maelstrom", price: 18500 }, { name: "Tack: Tack Zone", price: 25850 },
+        { name: "Ice: Super Brittle", price: 38500 }, { name: "Ice: Absolute Zero", price: 26000 }, { name: "Ice: Icicle Impale", price: 38200 },
+        { name: "Glue: Bloon Solver", price: 31000 }, { name: "Glue: Glue Storm", price: 19500 }, { name: "Glue: Super Glue", price: 35000 }
+    ],
+    M: [ // Military
+        { name: "Sniper: Cripple MOAB", price: 45000 }, { name: "Sniper: Elite Sniper", price: 21500 }, { name: "Sniper: Elite Defender", price: 17500 },
+        { name: "Sub: Energizer", price: 37000 }, { name: "Sub: Pre-Emptive", price: 43000 }, { name: "Sub: Sub Commander", price: 34000 },
+        { name: "Ace: Sky Shredder", price: 46100 }, { name: "Ace: Tsar Bomba", price: 38000 }, { name: "Ace: Big Plane", price: 102000 },
+        { name: "Heli: Apache Prime", price: 58000 }, { name: "Heli: Com. Commander", price: 38000 }, { name: "Heli: Special Poperations", price: 32000 },
+        { name: "Dartling: Ray of Doom", price: 112000 }, { name: "Dartling: M.A.D", price: 72000 }, { name: "Dartling: B.E.Z", price: 62000 }
+    ],
+    G: [ // Magic
+        { name: "Wizard: Archmage", price: 42500 }, { name: "Wizard: WLP", price: 65000 }, { name: "Wizard: Prince Darkness", price: 31800 },
+        { name: "Super: True Sun God", price: 650000 }, { name: "Super: Anti-Bloon", price: 103000 }, { name: "Super: Legend of Night", price: 255000 },
+        { name: "Ninja: Grandmaster", price: 52000 }, { name: "Ninja: Grand Saboteur", price: 25000 }, { name: "Ninja: Master Bomber", price: 44000 },
+        { name: "Alch: Permabrew", price: 72000 }, { name: "Alch: Total Transfo", price: 51000 }, { name: "Alch: BMA", price: 54000 },
+        { name: "Druid: Superstorm", price: 75000 }, { name: "Druid: Spirit Forest", price: 48000 }, { name: "Druid: Avatar Wrath", price: 52000 },
+        { name: "Mermonkey: Abyss Lord", price: 34500 }, { name: "Mermonkey: Popseidon", price: 48000 }, { name: "Mermonkey: Final Harmonic", price: 41200 }
+    ],
+    S: [ // Support
+        { name: "Spike: Super Mines", price: 162500 }, { name: "Spike: Carpet Spikes", price: 45000 }, { name: "Spike: Perma-Spike", price: 39500 },
+        { name: "Village: Primary Expert", price: 32000 }, { name: "Village: Homeland", price: 55000 }, { name: "Village: Monkeyopolis", price: 15000 },
+        { name: "Engi: Sent. Champion", price: 36000 }, { name: "Engi: Ultraboost", price: 115000 }, { name: "Engi: XXXL Trap", price: 62000 },
+        { name: "Beast: Megalodon", price: 65000 }, { name: "Beast: Pouākai", price: 48000 }, { name: "Beast: Giganotosaurus", price: 82000 }
+    ]
+};
 
 function populate() {
     const hSelect = document.getElementById('heroSelect');
     const t1Select = document.getElementById('tower1');
     const t2Select = document.getElementById('tower2');
 
-    heroes.forEach((h, i) => hSelect.add(new Option(`${h.name} ($${h.price})`, i)));
+    DATA.heroes.forEach((h, i) => hSelect.add(new Option(`${h.name} ($${h.price})`, i)));
     
-    // Tower 1: Primary (P) and Military (M)
-    const g1 = document.createElement('optgroup'); g1.label = "PRIMARY";
-    primaryT5.forEach((t, i) => g1.appendChild(new Option(t.name, "P" + i)));
-    t1Select.appendChild(g1);
-    
-    const g2 = document.createElement('optgroup'); g2.label = "MILITARY";
-    militaryT5.forEach((t, i) => g2.appendChild(new Option(t.name, "M" + i)));
-    t1Select.appendChild(g2);
+    const groups = [
+        { select: t1Select, label: "PRIMARY", key: "P" },
+        { select: t1Select, label: "MILITARY", key: "M" },
+        { select: t2Select, label: "MAGIC", key: "G" },
+        { select: t2Select, label: "SUPPORT", key: "S" }
+    ];
 
-    // Tower 2: Magic (G) and Support (S)
-    // Note: Changed Magic prefix to "G" to avoid overlap with "M"
-    const g3 = document.createElement('optgroup'); g3.label = "MAGIC";
-    magicT5.forEach((t, i) => g3.appendChild(new Option(t.name, "G" + i)));
-    t2Select.appendChild(g3);
-    
-    const g4 = document.createElement('optgroup'); g4.label = "SUPPORT";
-    supportT5.forEach((t, i) => g4.appendChild(new Option(t.name, "S" + i)));
-    t2Select.appendChild(g4);
+    groups.forEach(group => {
+        const g = document.createElement('optgroup');
+        g.label = group.label;
+        DATA[group.key].forEach((t, i) => {
+            g.appendChild(new Option(t.name, group.key + i));
+        });
+        group.select.appendChild(g);
+    });
 }
 
-function getTower(val) {
+function getTowerData(val) {
+    if (!val) return { name: "None", price: 0 };
     const prefix = val.charAt(0);
     const index = parseInt(val.substring(1));
-    
-    if(prefix === "P") return primaryT5[index];
-    if(prefix === "M") return militaryT5[index];
-    if(prefix === "G") return magicT5[index]; // G = Magic
-    if(prefix === "S") return supportT5[index];
-    
-    return {name: "Error", price: 0};
+    // Return tower from data object or a default error object
+    return (DATA[prefix] && DATA[prefix][index]) ? DATA[prefix][index] : { name: "Unknown", price: 0 };
 }
 
 function updateUI() {
-    const hSelect = document.getElementById('heroSelect');
-    const t1Select = document.getElementById('tower1');
-    const t2Select = document.getElementById('tower2');
+    const hIdx = document.getElementById('heroSelect').value;
+    const t1Val = document.getElementById('tower1').value;
+    const t2Val = document.getElementById('tower2').value;
 
-    const h = heroes[hSelect.value];
-    const t1 = getTower(t1Select.value);
-    const t2 = getTower(t2Select.value);
+    const hero = DATA.heroes[hIdx] || { name: "None", price: 0 };
+    const t1 = getTowerData(t1Val);
+    const t2 = getTowerData(t2Val);
 
-    const total = h.price + t1.price + t2.price;
+    const total = Number(hero.price) + Number(t1.price) + Number(t2.price);
 
     document.getElementById('priceReport').innerHTML = `
-        <div class="cost-row"><span>${h.name}</span><span>$${h.price.toLocaleString()}</span></div>
+        <div class="cost-row"><span>${hero.name}</span><span>$${hero.price.toLocaleString()}</span></div>
         <div class="cost-row"><span>${t1.name}</span><span>$${t1.price.toLocaleString()}</span></div>
         <div class="cost-row"><span>${t2.name}</span><span>$${t2.price.toLocaleString()}</span></div>
     `;
@@ -157,15 +148,14 @@ function updateUI() {
     
     totalBox.innerText = `Total: $${total.toLocaleString()}`;
 
+    // Dynamic Class Switching
+    totalBox.classList.remove('over-budget', 'under-budget');
     if (total > 178000) {
-        totalBox.className = "total-box over-budget";
-        advice.innerHTML = "<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Over CHIMPS budget (~$178k).";
-    } else if (total > 130000) {
-        totalBox.className = "total-box over-budget";
-        advice.innerHTML = "<span style='color:#ffdd57'>⚠️ TIGHT:</span> Requires heavy save-ups.";
+        totalBox.classList.add('over-budget');
+        advice.innerHTML = "<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Exceeds CHIMPS cash.";
     } else {
-        totalBox.className = "total-box under-budget";
-        advice.innerHTML = "<span style='color:#00d1b2'>✅ VIABLE:</span> Solid budget for support.";
+        totalBox.classList.add('under-budget');
+        advice.innerHTML = "<span style='color:#00d1b2'>✅ VIABLE:</span> Fits within CHIMPS budget.";
     }
 }
 
@@ -174,22 +164,16 @@ function rollRandom() {
     const t1Select = document.getElementById('tower1');
     const t2Select = document.getElementById('tower2');
 
-    // Helper to pick a random index that isn't an optgroup label
-    const pickRandomValidIndex = (selectElement) => {
-        let idx;
-        do {
-            idx = Math.floor(Math.random() * selectElement.options.length);
-        } while (selectElement.options[idx].disabled); // Skips labels if any are disabled
-        return idx;
-    };
-
-    hSelect.selectedIndex = Math.floor(Math.random() * heroes.length);
-    t1Select.selectedIndex = pickRandomValidIndex(t1Select);
-    t2Select.selectedIndex = pickRandomValidIndex(t2Select);
+    // Force a valid index selection
+    hSelect.selectedIndex = Math.floor(Math.random() * hSelect.options.length);
+    t1Select.selectedIndex = Math.floor(Math.random() * t1Select.options.length);
+    t2Select.selectedIndex = Math.floor(Math.random() * t2Select.options.length);
     
+    // Explicitly call update so we don't rely on the 'change' event
     updateUI();
 }
 
+// Initialize
 populate();
 updateUI();
 </script>
