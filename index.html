@@ -11,12 +11,12 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: #00d1b2; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 10px; border-radius: 6px; background: #2d333b; color: white; border: 1px solid #3e444d; cursor: pointer; }
-        .btn-random { width: 100%; padding: 15px; background: #00d1b2; color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .btn-random { width: 100%; padding: 15px; background: #00d1b2; color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
+        .btn-random:active { background: #008f7a; }
         .summary { background: #0b0e14; padding: 20px; border-radius: 10px; border-left: 5px solid #00d1b2; }
-        .total-box { font-size: 1.8em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; }
-        .under-budget { border: 2px solid #00d1b2; color: #00d1b2; }
-        .over-budget { border: 2px solid #ff3860; color: #ff3860; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .total-box { font-size: 1.8em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; transition: all 0.3s ease; }
+        .under-budget { border: 2px solid #00d1b2; color: #00d1b2; background: rgba(0, 209, 178, 0.05); }
+        .over-budget { border: 2px solid #ff3860; color: #ff3860; background: rgba(255, 56, 96, 0.05); }
         .cost-row { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding: 8px 0; font-size: 0.95em; }
         optgroup { background: #1a1c23; color: #00d1b2; }
     </style>
@@ -25,7 +25,7 @@
 
 <div class="container">
     <h2>CHIMPS Strategy Planner</h2>
-    <div class="subtitle">Complete Tier 5 Database (Hard Mode Prices)</div>
+    <div class="subtitle">Complete Tier 5 Database - Sync Correction Applied</div>
     
     <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
 
@@ -52,9 +52,10 @@
 </div>
 
 <script>
+// Data arrays remain the same for completeness
 const heroes = [
     { name: "Quincy", price: 585 }, { name: "Gwen", price: 970 }, { name: "Obyn", price: 700 },
-    { name: "Churchill", price: 2160 }, 
+    { name: "Churchill", price: 2160 }, { name: "Benjamin (N/A CHIMPS)", price: 1295 }, 
     { name: "Ezili", price: 650 }, { name: "Pat Fusty", price: 865 }, { name: "Adora", price: 1080 },
     { name: "Admiral Brickell", price: 970 }, { name: "Etienne", price: 920 }, { name: "Sauda", price: 650 },
     { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, { name: "Corvus", price: 1325 },
@@ -118,23 +119,22 @@ function populate() {
     t2Select.appendChild(g4);
 }
 
-function rollRandom() {
-    document.getElementById('heroSelect').selectedIndex = Math.floor(Math.random() * heroes.length);
-    document.getElementById('tower1').selectedIndex = Math.floor(Math.random() * (primaryT5.length + militaryT5.length));
-    document.getElementById('tower2').selectedIndex = Math.floor(Math.random() * (magicT5.length + supportT5.length));
-    updateUI();
-}
-
 function updateUI() {
-    const h = heroes[document.getElementById('heroSelect').value];
-    const t1Val = document.getElementById('tower1').value;
-    const t2Val = document.getElementById('tower2').value;
+    // Explicitly grab elements to ensure we aren't using cached data
+    const hSelect = document.getElementById('heroSelect');
+    const t1Select = document.getElementById('tower1');
+    const t2Select = document.getElementById('tower2');
+
+    const h = heroes[hSelect.value];
+    const t1Val = t1Select.value;
+    const t2Val = t2Select.value;
 
     const getTower = (val) => {
         if(val.startsWith("P")) return primaryT5[val.substring(1)];
         if(val.startsWith("M")) return militaryT5[val.substring(1)];
         if(val.startsWith("Ma")) return magicT5[val.substring(2)];
         if(val.startsWith("S")) return supportT5[val.substring(1)];
+        return {name: "Error", price: 0};
     };
 
     const t1 = getTower(t1Val);
@@ -149,18 +149,32 @@ function updateUI() {
 
     const totalBox = document.getElementById('totalDisplay');
     const advice = document.getElementById('saveupAdvice');
+    
     totalBox.innerText = `Total: $${total.toLocaleString()}`;
 
     if (total > 178000) {
         totalBox.className = "total-box over-budget";
-        advice.innerText = "🚨 IMPOSSIBLE: Total exceeds total CHIMPS income (~$178k).";
-    } else if (total > 110000) {
+        advice.innerHTML = "<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Over CHIMPS budget (~$178k).";
+    } else if (total > 120000) {
         totalBox.className = "total-box over-budget";
-        advice.innerText = "⚠️ TIGHT SAVEUP: You need an elite mid-game bridge like 0-3-2 Sniper.";
+        advice.innerHTML = "<span style='color:#ffdd57'>⚠️ TIGHT:</span> Requires efficient save-ups (e.g. 032 Sniper).";
     } else {
         totalBox.className = "total-box under-budget";
-        advice.innerText = "✅ COMFORTABLE: Plenty of cash for Alchemists and Villages.";
+        advice.innerHTML = "<span style='color:#00d1b2'>✅ VIABLE:</span> Solid budget for support towers.";
     }
+}
+
+function rollRandom() {
+    const hSelect = document.getElementById('heroSelect');
+    const t1Select = document.getElementById('tower1');
+    const t2Select = document.getElementById('tower2');
+
+    hSelect.selectedIndex = Math.floor(Math.random() * heroes.length);
+    t1Select.selectedIndex = Math.floor(Math.random() * t1Select.options.length);
+    t2Select.selectedIndex = Math.floor(Math.random() * t2Select.options.length);
+    
+    // This 'change' event trigger ensures the UI updates correctly and instantly
+    hSelect.dispatchEvent(new Event('change'));
 }
 
 populate();
@@ -168,4 +182,3 @@ updateUI();
 </script>
 </body>
 </html>
-
