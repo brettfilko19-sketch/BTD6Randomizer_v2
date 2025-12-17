@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BTD6 Ultimate CHIMPS Planner</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0b0e14; color: #e0e0e0; padding: 20px; }
@@ -12,6 +13,7 @@
         label { display: block; margin-bottom: 5px; color: #00d1b2; font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 10px; border-radius: 6px; background: #2d333b; color: white; border: 1px solid #3e444d; cursor: pointer; }
         .btn-random { width: 100%; padding: 15px; background: #00d1b2; color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
+        .btn-random:hover { background: #00f0cc; }
         .btn-random:active { background: #008f7a; }
         .summary { background: #0b0e14; padding: 20px; border-radius: 10px; border-left: 5px solid #00d1b2; }
         .total-box { font-size: 1.8em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; transition: all 0.3s ease; }
@@ -25,7 +27,7 @@
 
 <div class="container">
     <h2>CHIMPS Strategy Planner</h2>
-    <div class="subtitle">Complete Tier 5 Database - Sync Correction Applied</div>
+    <div class="subtitle">Tier 5 Database - Logic Fixed for Magic Towers</div>
     
     <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
 
@@ -52,10 +54,9 @@
 </div>
 
 <script>
-// Data arrays remain the same for completeness
 const heroes = [
     { name: "Quincy", price: 585 }, { name: "Gwen", price: 970 }, { name: "Obyn", price: 700 },
-    { name: "Churchill", price: 2160 }, { name: "Benjamin (N/A CHIMPS)", price: 1295 }, 
+    { name: "Churchill", price: 2160 }, 
     { name: "Ezili", price: 650 }, { name: "Pat Fusty", price: 865 }, { name: "Adora", price: 1080 },
     { name: "Admiral Brickell", price: 970 }, { name: "Etienne", price: 920 }, { name: "Sauda", price: 650 },
     { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, { name: "Corvus", price: 1325 },
@@ -102,6 +103,7 @@ function populate() {
 
     heroes.forEach((h, i) => hSelect.add(new Option(`${h.name} ($${h.price})`, i)));
     
+    // Tower 1: Primary (P) and Military (M)
     const g1 = document.createElement('optgroup'); g1.label = "PRIMARY";
     primaryT5.forEach((t, i) => g1.appendChild(new Option(t.name, "P" + i)));
     t1Select.appendChild(g1);
@@ -110,8 +112,10 @@ function populate() {
     militaryT5.forEach((t, i) => g2.appendChild(new Option(t.name, "M" + i)));
     t1Select.appendChild(g2);
 
+    // Tower 2: Magic (G) and Support (S)
+    // Note: Changed Magic prefix to "G" to avoid overlap with "M"
     const g3 = document.createElement('optgroup'); g3.label = "MAGIC";
-    magicT5.forEach((t, i) => g3.appendChild(new Option(t.name, "Ma" + i)));
+    magicT5.forEach((t, i) => g3.appendChild(new Option(t.name, "G" + i)));
     t2Select.appendChild(g3);
     
     const g4 = document.createElement('optgroup'); g4.label = "SUPPORT";
@@ -119,26 +123,27 @@ function populate() {
     t2Select.appendChild(g4);
 }
 
+function getTower(val) {
+    const prefix = val.charAt(0);
+    const index = parseInt(val.substring(1));
+    
+    if(prefix === "P") return primaryT5[index];
+    if(prefix === "M") return militaryT5[index];
+    if(prefix === "G") return magicT5[index]; // G = Magic
+    if(prefix === "S") return supportT5[index];
+    
+    return {name: "Error", price: 0};
+}
+
 function updateUI() {
-    // Explicitly grab elements to ensure we aren't using cached data
     const hSelect = document.getElementById('heroSelect');
     const t1Select = document.getElementById('tower1');
     const t2Select = document.getElementById('tower2');
 
     const h = heroes[hSelect.value];
-    const t1Val = t1Select.value;
-    const t2Val = t2Select.value;
+    const t1 = getTower(t1Select.value);
+    const t2 = getTower(t2Select.value);
 
-    const getTower = (val) => {
-        if(val.startsWith("P")) return primaryT5[val.substring(1)];
-        if(val.startsWith("M")) return militaryT5[val.substring(1)];
-        if(val.startsWith("Ma")) return magicT5[val.substring(2)];
-        if(val.startsWith("S")) return supportT5[val.substring(1)];
-        return {name: "Error", price: 0};
-    };
-
-    const t1 = getTower(t1Val);
-    const t2 = getTower(t2Val);
     const total = h.price + t1.price + t2.price;
 
     document.getElementById('priceReport').innerHTML = `
@@ -155,12 +160,12 @@ function updateUI() {
     if (total > 178000) {
         totalBox.className = "total-box over-budget";
         advice.innerHTML = "<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Over CHIMPS budget (~$178k).";
-    } else if (total > 120000) {
+    } else if (total > 130000) {
         totalBox.className = "total-box over-budget";
-        advice.innerHTML = "<span style='color:#ffdd57'>⚠️ TIGHT:</span> Requires efficient save-ups (e.g. 032 Sniper).";
+        advice.innerHTML = "<span style='color:#ffdd57'>⚠️ TIGHT:</span> Requires heavy save-ups.";
     } else {
         totalBox.className = "total-box under-budget";
-        advice.innerHTML = "<span style='color:#00d1b2'>✅ VIABLE:</span> Solid budget for support towers.";
+        advice.innerHTML = "<span style='color:#00d1b2'>✅ VIABLE:</span> Solid budget for support.";
     }
 }
 
@@ -169,12 +174,20 @@ function rollRandom() {
     const t1Select = document.getElementById('tower1');
     const t2Select = document.getElementById('tower2');
 
+    // Helper to pick a random index that isn't an optgroup label
+    const pickRandomValidIndex = (selectElement) => {
+        let idx;
+        do {
+            idx = Math.floor(Math.random() * selectElement.options.length);
+        } while (selectElement.options[idx].disabled); // Skips labels if any are disabled
+        return idx;
+    };
+
     hSelect.selectedIndex = Math.floor(Math.random() * heroes.length);
-    t1Select.selectedIndex = Math.floor(Math.random() * t1Select.options.length);
-    t2Select.selectedIndex = Math.floor(Math.random() * t2Select.options.length);
+    t1Select.selectedIndex = pickRandomValidIndex(t1Select);
+    t2Select.selectedIndex = pickRandomValidIndex(t2Select);
     
-    // This 'change' event trigger ensures the UI updates correctly and instantly
-    hSelect.dispatchEvent(new Event('change'));
+    updateUI();
 }
 
 populate();
