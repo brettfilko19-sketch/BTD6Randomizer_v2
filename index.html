@@ -5,26 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BTD6 Ultimate CHIMPS Planner</title>
     <style>
-        :root {
-            --primary: #00d1b2;
-            --bg-card: #1a1c23;
-            --bg-body: #0b0e14;
-            --border: #2d333b;
-        }
+        :root { --primary: #00d1b2; --bg-card: #1a1c23; --bg-body: #0b0e14; --border: #2d333b; }
+        .coop-mode { --primary: #ffdd57; --border: #5d4d8a; }
 
-        /* Co-op Mode Colors */
-        .coop-mode {
-            --primary: #ffdd57; /* Gold */
-            --border: #5d4d8a; /* Purple accent */
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); color: #e0e0e0; padding: 20px; transition: all 0.3s ease; }
-        .container { max-width: 850px; margin: auto; background: var(--bg-card); padding: 25px; border-radius: 12px; border: 2px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); color: #e0e0e0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 850px; margin: auto; background: var(--bg-card); padding: 25px; border-radius: 12px; border: 2px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         
         h2 { color: var(--primary); text-align: center; text-transform: uppercase; margin-bottom: 5px; }
         .subtitle { text-align: center; color: #7a7a7a; font-size: 0.85em; margin-bottom: 20px; }
         
-        /* Co-op Toggle Styling */
         .coop-toggle-container {
             display: flex; justify-content: center; align-items: center; 
             margin-bottom: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;
@@ -35,9 +24,12 @@
         label { display: block; margin-bottom: 5px; color: var(--primary); font-weight: bold; font-size: 0.9em; }
         select { width: 100%; padding: 10px; border-radius: 6px; background: #2d333b; color: white; border: 1px solid #3e444d; cursor: pointer; }
         
-        .btn-random { width: 100%; padding: 15px; background: var(--primary); color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
-        .btn-random:hover { opacity: 0.9; transform: scale(1.01); }
-        
+        /* Discount Checkbox Styling */
+        .discount-row { display: flex; gap: 15px; margin-top: 5px; padding-left: 5px; }
+        .discount-item { display: flex; align-items: center; font-size: 0.75em; color: #95a5a6; cursor: pointer; }
+        .discount-item input { margin-right: 5px; cursor: pointer; }
+
+        .btn-random { width: 100%; padding: 15px; background: var(--primary); color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
         .summary { background: #0b0e14; padding: 20px; border-radius: 10px; border-left: 5px solid var(--primary); }
         .total-box { font-size: 1.8em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; }
         
@@ -46,18 +38,19 @@
         .coop-warning { border: 2px solid #ffdd57; color: #ffdd57; background: rgba(255, 221, 87, 0.05); }
 
         .cost-row { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding: 8px 0; font-size: 0.95em; }
+        .savings-text { color: #2ecc71; font-size: 0.85em; }
         optgroup { background: #1a1c23; color: var(--primary); }
     </style>
 </head>
 <body id="mainBody">
 
-<div class="container" id="mainContainer">
+<div class="container">
     <h2>CHIMPS Strategy Planner</h2>
     <div class="subtitle" id="modeSubtitle">Single Player Mode</div>
 
     <div class="coop-toggle-container">
         <input type="checkbox" id="coopToggle" onchange="toggleCoop()">
-        <label for="coopToggle">👥 3-Player Co-op (2/3 Cash)</label>
+        <label for="coopToggle">👥 3-Player Co-op (Me & Brother: 2/3 Cash)</label>
     </div>
     
     <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
@@ -70,11 +63,19 @@
     <div class="input-group">
         <label>Primary/Military T5:</label>
         <select id="tower1" onchange="updateUI()"></select>
+        <div class="discount-row">
+            <label class="discount-item"><input type="checkbox" id="t1s" onchange="handleDiscount('t1s', 't1d')"> Single Discount (10%)</label>
+            <label class="discount-item"><input type="checkbox" id="t1d" onchange="handleDiscount('t1d', 't1s')"> Double Discount (20%)</label>
+        </div>
     </div>
 
     <div class="input-group">
         <label>Magic/Support T5:</label>
         <select id="tower2" onchange="updateUI()"></select>
+        <div class="discount-row">
+            <label class="discount-item"><input type="checkbox" id="t2s" onchange="handleDiscount('t2s', 't2d')"> Single Discount (10%)</label>
+            <label class="discount-item"><input type="checkbox" id="t2d" onchange="handleDiscount('t2d', 't2s')"> Double Discount (20%)</label>
+        </div>
     </div>
 
     <div class="summary">
@@ -93,81 +94,39 @@ const DATA = {
         { name: "Sauda", price: 650 }, { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, 
         { name: "Corvus", price: 1325 }, { name: "Silas", price: 1200 }, { name: "Rosalia", price: 1100 }
     ],
-    P: [
-        { name: "Dart: Ultra-Jugg", price: 18740 }, { name: "Dart: PMFC", price: 53700 }, { name: "Dart: XBM", price: 27375 },
-        { name: "Boomer: Glaive Lord", price: 42100 }, { name: "Boomer: Perma Charge", price: 41250 }, { name: "Boomer: MOAB Dom", price: 63500 },
-        { name: "Bomb: Bloon Crush", price: 61000 }, { name: "Bomb: MOAB Elim", price: 31500 }, { name: "Bomb: Bomb Blitz", price: 40500 },
-        { name: "Tack: Inferno Ring", price: 55500 }, { name: "Tack: S-Maelstrom", price: 18500 }, { name: "Tack: Tack Zone", price: 25850 },
-        { name: "Ice: Super Brittle", price: 38500 }, { name: "Ice: Absolute Zero", price: 26000 }, { name: "Ice: Icicle Impale", price: 38200 },
-        { name: "Glue: Bloon Solver", price: 31000 }, { name: "Glue: Glue Storm", price: 19500 }, { name: "Glue: Super Glue", price: 35000 }
-    ],
-    M: [
-        { name: "Sniper: Cripple MOAB", price: 45000 }, { name: "Sniper: Elite Sniper", price: 21500 }, { name: "Sniper: Elite Defender", price: 17500 },
-        { name: "Sub: Energizer", price: 37000 }, { name: "Sub: Pre-Emptive", price: 43000 }, { name: "Sub: Sub Commander", price: 34000 },
-        { name: "Ace: Sky Shredder", price: 46100 }, { name: "Ace: Tsar Bomba", price: 38000 }, { name: "Ace: Big Plane", price: 102000 },
-        { name: "Heli: Apache Prime", price: 58000 }, { name: "Heli: Com. Commander", price: 38000 }, { name: "Heli: Special Poperations", price: 32000 },
-        { name: "Dartling: Ray of Doom", price: 112000 }, { name: "Dartling: M.A.D", price: 72000 }, { name: "Dartling: B.E.Z", price: 62000 }
-    ],
-    G: [
-        { name: "Wizard: Archmage", price: 42500 }, { name: "Wizard: WLP", price: 65000 }, { name: "Wizard: Prince Darkness", price: 31800 },
-        { name: "Super: True Sun God", price: 650000 }, { name: "Super: Anti-Bloon", price: 103000 }, { name: "Super: Legend of Night", price: 255000 },
-        { name: "Ninja: Grandmaster", price: 52000 }, { name: "Ninja: Grand Saboteur", price: 25000 }, { name: "Ninja: Master Bomber", price: 44000 },
-        { name: "Alch: Permabrew", price: 72000 }, { name: "Alch: Total Transfo", price: 51000 }, { name: "Alch: BMA", price: 54000 },
-        { name: "Druid: Superstorm", price: 75000 }, { name: "Druid: Spirit Forest", price: 48000 }, { name: "Druid: Avatar Wrath", price: 52000 },
-        { name: "Mermonkey: Abyss Lord", price: 34500 }, { name: "Mermonkey: Popseidon", price: 48000 }, { name: "Mermonkey: Final Harmonic", price: 41200 }
-    ],
-    S: [
-        { name: "Spike: Super Mines", price: 162500 }, { name: "Spike: Carpet Spikes", price: 45000 }, { name: "Spike: Perma-Spike", price: 39500 },
-        { name: "Village: Primary Expert", price: 32000 }, { name: "Village: Homeland", price: 55000 }, { name: "Village: Monkeyopolis", price: 15000 },
-        { name: "Engi: Sent. Champion", price: 36000 }, { name: "Engi: Ultraboost", price: 115000 }, { name: "Engi: XXXL Trap", price: 62000 },
-        { name: "Beast: Megalodon", price: 65000 }, { name: "Beast: Pouākai", price: 48000 }, { name: "Beast: Giganotosaurus", price: 82000 }
-    ]
+    P: [{ name: "Dart: Ultra-Jugg", price: 18740 }, { name: "Dart: PMFC", price: 53700 }, { name: "Dart: XBM", price: 27375 }, { name: "Boomer: Glaive Lord", price: 42100 }, { name: "Boomer: Perma Charge", price: 41250 }, { name: "Boomer: MOAB Dom", price: 63500 }, { name: "Bomb: Bloon Crush", price: 61000 }, { name: "Bomb: MOAB Elim", price: 31500 }, { name: "Bomb: Bomb Blitz", price: 40500 }, { name: "Tack: Inferno Ring", price: 55500 }, { name: "Tack: S-Maelstrom", price: 18500 }, { name: "Tack: Tack Zone", price: 25850 }, { name: "Ice: Super Brittle", price: 38500 }, { name: "Ice: Absolute Zero", price: 26000 }, { name: "Ice: Icicle Impale", price: 38200 }, { name: "Glue: Bloon Solver", price: 31000 }, { name: "Glue: Glue Storm", price: 19500 }, { name: "Glue: Super Glue", price: 35000 }],
+    M: [{ name: "Sniper: Cripple MOAB", price: 45000 }, { name: "Sniper: Elite Sniper", price: 21500 }, { name: "Sniper: Elite Defender", price: 17500 }, { name: "Sub: Energizer", price: 37000 }, { name: "Sub: Pre-Emptive", price: 43000 }, { name: "Sub: Sub Commander", price: 34000 }, { name: "Ace: Sky Shredder", price: 46100 }, { name: "Ace: Tsar Bomba", price: 38000 }, { name: "Ace: Big Plane", price: 102000 }, { name: "Heli: Apache Prime", price: 58000 }, { name: "Heli: Com. Commander", price: 38000 }, { name: "Heli: Special Poperations", price: 32000 }, { name: "Dartling: Ray of Doom", price: 112000 }, { name: "Dartling: M.A.D", price: 72000 }, { name: "Dartling: B.E.Z", price: 62000 }],
+    G: [{ name: "Wizard: Archmage", price: 42500 }, { name: "Wizard: WLP", price: 65000 }, { name: "Wizard: Prince Darkness", price: 31800 }, { name: "Super: True Sun God", price: 650000 }, { name: "Super: Anti-Bloon", price: 103000 }, { name: "Super: Legend of Night", price: 255000 }, { name: "Ninja: Grandmaster", price: 52000 }, { name: "Ninja: Grand Saboteur", price: 25000 }, { name: "Ninja: Master Bomber", price: 44000 }, { name: "Alch: Permabrew", price: 72000 }, { name: "Alch: Total Transfo", price: 51000 }, { name: "Alch: BMA", price: 54000 }, { name: "Druid: Superstorm", price: 75000 }, { name: "Druid: Spirit Forest", price: 48000 }, { name: "Druid: Avatar Wrath", price: 52000 }, { name: "Mermonkey: Abyss Lord", price: 34500 }, { name: "Mermonkey: Popseidon", price: 48000 }, { name: "Mermonkey: Final Harmonic", price: 41200 }],
+    S: [{ name: "Spike: Super Mines", price: 162500 }, { name: "Spike: Carpet Spikes", price: 45000 }, { name: "Spike: Perma-Spike", price: 39500 }, { name: "Village: Primary Expert", price: 32000 }, { name: "Village: Homeland", price: 55000 }, { name: "Village: Monkeyopolis", price: 15000 }, { name: "Engi: Sent. Champion", price: 36000 }, { name: "Engi: Ultraboost", price: 115000 }, { name: "Engi: XXXL Trap", price: 62000 }, { name: "Beast: Megalodon", price: 65000 }, { name: "Beast: Pouākai", price: 48000 }, { name: "Beast: Giganotosaurus", price: 82000 }]
 };
 
-function toggleCoop() {
-    const isCoop = document.getElementById('coopToggle').checked;
-    const body = document.getElementById('mainBody');
-    const sub = document.getElementById('modeSubtitle');
-
-    if (isCoop) {
-        body.classList.add('coop-mode');
-        sub.innerText = "Co-op Mode (Pooling 2/3 Cash)";
-    } else {
-        body.classList.remove('coop-mode');
-        sub.innerText = "Single Player Mode";
+// Ensures you can't have single and double checked at once
+function handleDiscount(clicked, other) {
+    if (document.getElementById(clicked).checked) {
+        document.getElementById(other).checked = false;
     }
     updateUI();
 }
 
-function populate() {
-    const hSelect = document.getElementById('heroSelect');
-    const t1Select = document.getElementById('tower1');
-    const t2Select = document.getElementById('tower2');
-
-    DATA.heroes.forEach((h, i) => hSelect.add(new Option(`${h.name} ($${h.price})`, i)));
-    
-    const groups = [
-        { select: t1Select, label: "PRIMARY", key: "P" },
-        { select: t1Select, label: "MILITARY", key: "M" },
-        { select: t2Select, label: "MAGIC", key: "G" },
-        { select: t2Select, label: "SUPPORT", key: "S" }
-    ];
-
-    groups.forEach(group => {
-        const g = document.createElement('optgroup');
-        g.label = group.label;
-        DATA[group.key].forEach((t, i) => {
-            g.appendChild(new Option(t.name, group.key + i));
-        });
-        group.select.appendChild(g);
-    });
+function toggleCoop() {
+    const isCoop = document.getElementById('coopToggle').checked;
+    document.getElementById('mainBody').classList.toggle('coop-mode', isCoop);
+    document.getElementById('modeSubtitle').innerText = isCoop ? "Co-op Mode (Pooling 2/3 Cash)" : "Single Player Mode";
+    updateUI();
 }
 
-function getTowerData(val) {
-    if (!val) return { name: "None", price: 0 };
-    const prefix = val.charAt(0);
-    const index = parseInt(val.substring(1));
-    return (DATA[prefix] && DATA[prefix][index]) ? DATA[prefix][index] : { name: "Unknown", price: 0 };
+function calculateSavings(towerPrice, sId, dId, towerName) {
+    // Village discount only applies to Base + Tiers 1-3. 
+    // Average cost of a T3 setup is roughly $5,500.
+    // If it's a Super Monkey, T3 is much higher (approx $25k).
+    let discountablePortion = towerName.includes("Super:") ? 25000 : 5500;
+    
+    // Safety: Cannot discount more than the tower actually costs
+    discountablePortion = Math.min(towerPrice, discountablePortion);
+
+    if (document.getElementById(dId).checked) return Math.floor(discountablePortion * 0.20);
+    if (document.getElementById(sId).checked) return Math.floor(discountablePortion * 0.10);
+    return 0;
 }
 
 function updateUI() {
@@ -180,15 +139,16 @@ function updateUI() {
     const t1 = getTowerData(t1Val);
     const t2 = getTowerData(t2Val);
 
-    const total = Number(hero.price) + Number(t1.price) + Number(t2.price);
-    
-    // Max Cash Logic: 178,000 for solo, ~118,666 for 2/3 Co-op
+    const s1 = calculateSavings(t1.price, 't1s', 't1d', t1.name);
+    const s2 = calculateSavings(t2.price, 't2s', 't2d', t2.name);
+
+    const total = (hero.price + t1.price + t2.price) - (s1 + s2);
     const maxCash = isCoop ? 118666 : 178000;
 
     document.getElementById('priceReport').innerHTML = `
         <div class="cost-row"><span>${hero.name}</span><span>$${hero.price.toLocaleString()}</span></div>
-        <div class="cost-row"><span>${t1.name}</span><span>$${t1.price.toLocaleString()}</span></div>
-        <div class="cost-row"><span>${t2.name}</span><span>$${t2.price.toLocaleString()}</span></div>
+        <div class="cost-row"><span>${t1.name}</span><span>$${t1.price.toLocaleString()} ${s1 > 0 ? `<span class="savings-text">(-$${s1})</span>` : ''}</span></div>
+        <div class="cost-row"><span>${t2.name}</span><span>$${t2.price.toLocaleString()} ${s2 > 0 ? `<span class="savings-text">(-$${s2})</span>` : ''}</span></div>
     `;
 
     const totalBox = document.getElementById('totalDisplay');
@@ -199,26 +159,13 @@ function updateUI() {
 
     if (total > maxCash) {
         totalBox.classList.add('over-budget');
-        advice.innerHTML = `<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Exceeds your share ($${maxCash.toLocaleString()}).`;
+        advice.innerHTML = `<span style='color:#ff3860'>🚨 IMPOSSIBLE:</span> Over budget by $${(total - maxCash).toLocaleString()}.`;
     } else {
         totalBox.classList.add(isCoop ? 'coop-warning' : 'under-budget');
-        advice.innerHTML = `<span style='color:${isCoop ? "#ffdd57" : "#00d1b2"}'>✅ VIABLE:</span> Fits within budget.`;
+        advice.innerHTML = `<span style='color:${isCoop ? "#ffdd57" : "#00d1b2"}'>✅ VIABLE:</span> Solid build for this budget.`;
     }
 }
 
-function rollRandom() {
-    const hSelect = document.getElementById('heroSelect');
-    const t1Select = document.getElementById('tower1');
-    const t2Select = document.getElementById('tower2');
-    hSelect.selectedIndex = Math.floor(Math.random() * hSelect.options.length);
-    t1Select.selectedIndex = Math.floor(Math.random() * t1Select.options.length);
-    t2Select.selectedIndex = Math.floor(Math.random() * t2Select.options.length);
-    updateUI();
-}
-
-populate();
-updateUI();
-</script>
-</body>
-</html>
-
+// Logic to pull from DATA object remains same as previous stable version
+function getTowerData(val) {
+    if (!val) return { name: "None",
