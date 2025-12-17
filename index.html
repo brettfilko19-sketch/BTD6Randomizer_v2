@@ -2,153 +2,169 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BTD6 CHIMPS Strategy Planner</title>
+    <title>BTD6 Ultimate CHIMPS Planner</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #16213e; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460; }
-        h2 { color: #4ecca3; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #95a5a6; font-size: 0.9em; margin-bottom: 25px; }
-        .input-group { margin-bottom: 20px; display: flex; flex-direction: column; }
-        label { margin-bottom: 8px; font-weight: bold; color: #95a5a6; }
-        select { padding: 12px; border-radius: 6px; background: #0f3460; color: white; border: 1px solid #1a1a2e; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        
-        .btn-random { 
-            width: 100%; padding: 15px; margin-bottom: 20px; border: none; border-radius: 8px; 
-            background: #4ecca3; color: #1a1a2e; font-weight: bold; font-size: 1.1em; 
-            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 0 #3ba382;
-        }
-        .btn-random:hover { background: #45b691; transform: translateY(-2px); }
-        .btn-random:active { transform: translateY(2px); box-shadow: none; }
-
-        .summary { margin-top: 30px; padding: 20px; background: #0f3460; border-radius: 8px; border-left: 5px solid #4ecca3; }
-        .total-box { font-size: 1.5em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 6px; font-weight: bold; }
-        .under-budget { border: 2px solid #4ecca3; color: #4ecca3; background: rgba(78, 204, 163, 0.1); }
-        .over-budget { border: 2px solid #e94560; color: #e94560; background: rgba(233, 69, 96, 0.1); animation: blink 1.5s infinite; }
-        
-        @keyframes blink { 50% { opacity: 0.7; } }
-        .warning-text { color: #e94560; font-weight: bold; text-align: center; margin-top: 10px; font-size: 1.1em; }
-        #priceReport p { margin: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
-        .cost-val { float: right; font-family: monospace; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0e14; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 850px; margin: auto; background: #1a1c23; padding: 25px; border-radius: 12px; border: 1px solid #2d333b; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        h2 { color: #00d1b2; text-align: center; text-transform: uppercase; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7a7a7a; font-size: 0.85em; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #00d1b2; font-weight: bold; font-size: 0.9em; }
+        select { width: 100%; padding: 10px; border-radius: 6px; background: #2d333b; color: white; border: 1px solid #3e444d; cursor: pointer; }
+        .btn-random { width: 100%; padding: 15px; background: #00d1b2; color: #0b0e14; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .summary { background: #0b0e14; padding: 20px; border-radius: 10px; border-left: 5px solid #00d1b2; }
+        .total-box { font-size: 1.8em; text-align: center; margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; }
+        .under-budget { border: 2px solid #00d1b2; color: #00d1b2; }
+        .over-budget { border: 2px solid #ff3860; color: #ff3860; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .cost-row { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding: 8px 0; font-size: 0.95em; }
+        optgroup { background: #1a1c23; color: #00d1b2; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>CHIMPS Strategy Planner</h2>
-    <div class="subtitle">Cumulative Cost Calculator (Hard Mode Prices)</div>
+    <div class="subtitle">Complete Tier 5 Database (Hard Mode Prices)</div>
     
     <button class="btn-random" onclick="rollRandom()">🎲 ROLL RANDOM STRATEGY</button>
 
     <div class="input-group">
-        <label>Hero:</label>
+        <label>Hero Selection:</label>
         <select id="heroSelect" onchange="updateUI()"></select>
     </div>
 
     <div class="input-group">
-        <label>Tower 1 (Cumulative Cost):</label>
+        <label>Primary/Military T5:</label>
         <select id="tower1" onchange="updateUI()"></select>
     </div>
 
     <div class="input-group">
-        <label>Tower 2 (Cumulative Cost):</label>
+        <label>Magic/Support T5:</label>
         <select id="tower2" onchange="updateUI()"></select>
     </div>
 
     <div class="summary">
         <div id="priceReport"></div>
         <div id="totalDisplay" class="total-box">Total: $0</div>
-        <div id="budgetWarning" class="warning-text"></div>
+        <div id="saveupAdvice" style="margin-top:15px; font-style: italic; color: #95a5a6; text-align: center;"></div>
     </div>
 </div>
 
 <script>
-/** * PRICES SHOWN ARE CUMULATIVE (Base + T1 + T2 + T3 + T4 + T5) 
- * Hard Mode / CHIMPS Difficulty
- */
 const heroes = [
-    { name: "Quincy", price: 585 },
-    { name: "Gwendolin", price: 970 },
-    { name: "Obyn Greenfoot", price: 700 },
-    { name: "Captain Churchill", price: 2160 },
-    { name: "Adora", price: 1080 },
-    { name: "Corvus", price: 1325 },
-    { name: "Silas (The Ice Shaper)", price: 1200 },
-    { name: "Sauda", price: 650 }
+    { name: "Quincy", price: 585 }, { name: "Gwen", price: 970 }, { name: "Obyn", price: 700 },
+    { name: "Churchill", price: 2160 }, { name: "Benjamin (N/A CHIMPS)", price: 1295 }, 
+    { name: "Ezili", price: 650 }, { name: "Pat Fusty", price: 865 }, { name: "Adora", price: 1080 },
+    { name: "Admiral Brickell", price: 970 }, { name: "Etienne", price: 920 }, { name: "Sauda", price: 650 },
+    { name: "Psi", price: 1080 }, { name: "Geraldo", price: 1325 }, { name: "Corvus", price: 1325 },
+    { name: "Silas", price: 1200 }, { name: "Rosalia", price: 1100 }
 ];
 
-const towers = [
-    { name: "Desperado: Blazing Sun", price: 21400 }, 
-    { name: "Desperado: Golden Justice", price: 44200 }, 
-    { name: "Desperado: Desert Phantom", price: 51000 },
-    { name: "Mermonkey: Lord of the Abyss", price: 34500 }, 
-    { name: "Mermonkey: Popseidon", price: 48000 },
-    { name: "Mermonkey: Final Harmonic", price: 41200 },
-    { name: "Dart: Crossbow Master", price: 27375 },
-    { name: "Boomer: Glaive Lord", price: 42100 },
-    { name: "Tack: The Tack Zone", price: 25850 },
-    { name: "Wizard: Archmage", price: 42500 },
-    { name: "Spike: Perma-Spike", price: 39500 },
-    { name: "Ice: Icicle Impale", price: 38200 },
-    { name: "Ninja: Grandmaster Ninja", price: 52000 },
-    { name: "Sniper: Elite Sniper", price: 21500 },
-    { name: "Heli: Apache Prime", price: 58000 },
-    { name: "Sub: Sub Commander", price: 34000 }
+const primaryT5 = [
+    { name: "Dart: Ultra-Jugg", price: 18740 }, { name: "Dart: PMFC", price: 53700 }, { name: "Dart: XBM", price: 27375 },
+    { name: "Boomer: Glaive Lord", price: 42100 }, { name: "Boomer: Perma Charge", price: 41250 }, { name: "Boomer: MOAB Dom", price: 63500 },
+    { name: "Bomb: Bloon Crush", price: 61000 }, { name: "Bomb: MOAB Elim", price: 31500 }, { name: "Bomb: Bomb Blitz", price: 40500 },
+    { name: "Tack: Inferno Ring", price: 55500 }, { name: "Tack: S-Maelstrom", price: 18500 }, { name: "Tack: Tack Zone", price: 25850 },
+    { name: "Ice: Super Brittle", price: 38500 }, { name: "Ice: Absolute Zero", price: 26000 }, { name: "Ice: Icicle Impale", price: 38200 },
+    { name: "Glue: Bloon Solver", price: 31000 }, { name: "Glue: Glue Storm", price: 19500 }, { name: "Glue: Super Glue", price: 35000 }
 ];
 
-function initDropdowns() {
-    const heroEl = document.getElementById('heroSelect');
-    const t1El = document.getElementById('tower1');
-    const t2El = document.getElementById('tower2');
+const militaryT5 = [
+    { name: "Sniper: Cripple MOAB", price: 45000 }, { name: "Sniper: Elite Sniper", price: 21500 }, { name: "Sniper: Elite Defender", price: 17500 },
+    { name: "Sub: Energizer", price: 37000 }, { name: "Sub: Pre-Emptive", price: 43000 }, { name: "Sub: Sub Commander", price: 34000 },
+    { name: "Ace: Sky Shredder", price: 46100 }, { name: "Ace: Tsar Bomba", price: 38000 }, { name: "Ace: Big Plane", price: 102000 },
+    { name: "Heli: Apache Prime", price: 58000 }, { name: "Heli: Com. Commander", price: 38000 }, { name: "Heli: Special Poperations", price: 32000 },
+    { name: "Dartling: Ray of Doom", price: 112000 }, { name: "Dartling: M.A.D", price: 72000 }, { name: "Dartling: B.E.Z", price: 62000 }
+];
 
-    heroes.forEach((h, i) => heroEl.add(new Option(`${h.name} ($${h.price})`, i)));
-    towers.forEach((t, i) => {
-        t1El.add(new Option(`${t.name} ($${t.price})`, i));
-        t2El.add(new Option(`${t.name} ($${t.price})`, i));
-    });
+const magicT5 = [
+    { name: "Wizard: Archmage", price: 42500 }, { name: "Wizard: WLP", price: 65000 }, { name: "Wizard: Prince Darkness", price: 31800 },
+    { name: "Super: True Sun God", price: 650000 }, { name: "Super: Anti-Bloon", price: 103000 }, { name: "Super: Legend of Night", price: 255000 },
+    { name: "Ninja: Grandmaster", price: 52000 }, { name: "Ninja: Grand Saboteur", price: 25000 }, { name: "Ninja: Master Bomber", price: 44000 },
+    { name: "Alch: Permabrew", price: 72000 }, { name: "Alch: Total Transfo", price: 51000 }, { name: "Alch: BMA", price: 54000 },
+    { name: "Druid: Superstorm", price: 75000 }, { name: "Druid: Spirit Forest", price: 48000 }, { name: "Druid: Avatar Wrath", price: 52000 },
+    { name: "Mermonkey: Abyss Lord", price: 34500 }, { name: "Mermonkey: Popseidon", price: 48000 }, { name: "Mermonkey: Final Harmonic", price: 41200 }
+];
+
+const supportT5 = [
+    { name: "Spike: Super Mines", price: 162500 }, { name: "Spike: Carpet Spikes", price: 45000 }, { name: "Spike: Perma-Spike", price: 39500 },
+    { name: "Village: Primary Expert", price: 32000 }, { name: "Village: Homeland", price: 55000 }, { name: "Village: Monkeyopolis", price: 15000 },
+    { name: "Engi: Sent. Champion", price: 36000 }, { name: "Engi: Ultraboost", price: 115000 }, { name: "Engi: XXXL Trap", price: 62000 },
+    { name: "Beast: Megalodon", price: 65000 }, { name: "Beast: Pouākai", price: 48000 }, { name: "Beast: Giganotosaurus", price: 82000 }
+];
+
+function populate() {
+    const hSelect = document.getElementById('heroSelect');
+    const t1Select = document.getElementById('tower1');
+    const t2Select = document.getElementById('tower2');
+
+    heroes.forEach((h, i) => hSelect.add(new Option(`${h.name} ($${h.price})`, i)));
+    
+    const g1 = document.createElement('optgroup'); g1.label = "PRIMARY";
+    primaryT5.forEach((t, i) => g1.appendChild(new Option(t.name, "P" + i)));
+    t1Select.appendChild(g1);
+    
+    const g2 = document.createElement('optgroup'); g2.label = "MILITARY";
+    militaryT5.forEach((t, i) => g2.appendChild(new Option(t.name, "M" + i)));
+    t1Select.appendChild(g2);
+
+    const g3 = document.createElement('optgroup'); g3.label = "MAGIC";
+    magicT5.forEach((t, i) => g3.appendChild(new Option(t.name, "Ma" + i)));
+    t2Select.appendChild(g3);
+    
+    const g4 = document.createElement('optgroup'); g4.label = "SUPPORT";
+    supportT5.forEach((t, i) => g4.appendChild(new Option(t.name, "S" + i)));
+    t2Select.appendChild(g4);
 }
 
 function rollRandom() {
     document.getElementById('heroSelect').selectedIndex = Math.floor(Math.random() * heroes.length);
-    document.getElementById('tower1').selectedIndex = Math.floor(Math.random() * towers.length);
-    document.getElementById('tower2').selectedIndex = Math.floor(Math.random() * towers.length);
+    document.getElementById('tower1').selectedIndex = Math.floor(Math.random() * (primaryT5.length + militaryT5.length));
+    document.getElementById('tower2').selectedIndex = Math.floor(Math.random() * (magicT5.length + supportT5.length));
     updateUI();
 }
 
 function updateUI() {
-    const hIdx = document.getElementById('heroSelect').value;
-    const t1Idx = document.getElementById('tower1').value;
-    const t2Idx = document.getElementById('tower2').value;
+    const h = heroes[document.getElementById('heroSelect').value];
+    const t1Val = document.getElementById('tower1').value;
+    const t2Val = document.getElementById('tower2').value;
 
-    const h = heroes[hIdx];
-    const t1 = towers[t1Idx];
-    const t2 = towers[t2Idx];
+    const getTower = (val) => {
+        if(val.startsWith("P")) return primaryT5[val.substring(1)];
+        if(val.startsWith("M")) return militaryT5[val.substring(1)];
+        if(val.startsWith("Ma")) return magicT5[val.substring(2)];
+        if(val.startsWith("S")) return supportT5[val.substring(1)];
+    };
 
+    const t1 = getTower(t1Val);
+    const t2 = getTower(t2Val);
     const total = h.price + t1.price + t2.price;
-    const budgetLimit = 100000;
 
     document.getElementById('priceReport').innerHTML = `
-        <p><strong>Hero Base:</strong> <span class="cost-val">$${h.price.toLocaleString()}</span></p>
-        <p><strong>T1 Cumulative:</strong> <span class="cost-val">$${t1.price.toLocaleString()}</span></p>
-        <p><strong>T2 Cumulative:</strong> <span class="cost-val">$${t2.price.toLocaleString()}</span></p>
+        <div class="cost-row"><span>${h.name}</span><span>$${h.price.toLocaleString()}</span></div>
+        <div class="cost-row"><span>${t1.name}</span><span>$${t1.price.toLocaleString()}</span></div>
+        <div class="cost-row"><span>${t2.name}</span><span>$${t2.price.toLocaleString()}</span></div>
     `;
 
     const totalBox = document.getElementById('totalDisplay');
-    totalBox.innerText = `Total Investment: $${total.toLocaleString()}`;
+    const advice = document.getElementById('saveupAdvice');
+    totalBox.innerText = `Total: $${total.toLocaleString()}`;
 
-    const warning = document.getElementById('budgetWarning');
-    if (total > budgetLimit) {
+    if (total > 178000) {
         totalBox.className = "total-box over-budget";
-        warning.innerText = "⚠️ EXCEEDS $100K: This setup takes up most of your CHIMPS cash!";
+        advice.innerText = "🚨 IMPOSSIBLE: Total exceeds total CHIMPS income (~$178k).";
+    } else if (total > 110000) {
+        totalBox.className = "total-box over-budget";
+        advice.innerText = "⚠️ TIGHT SAVEUP: You need an elite mid-game bridge like 0-3-2 Sniper.";
     } else {
         totalBox.className = "total-box under-budget";
-        warning.innerText = "✅ Good Budget: Plenty left for Village/Alch support.";
+        advice.innerText = "✅ COMFORTABLE: Plenty of cash for Alchemists and Villages.";
     }
 }
 
-initDropdowns();
+populate();
 updateUI();
 </script>
-
 </body>
-
 </html>
